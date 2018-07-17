@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const passport = require("passport"); //main authentecation module
 
 const users = require("./routes/api/users");
 const profile = require("./routes/api/profile");
@@ -21,7 +22,13 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
-app.get("/", (req, res) => res.send("Hello test world"));
+// passport middleware
+app.use(passport.initialize());
+
+// passport config
+require("./config/passport")(passport);
+
+//app.get("/", (req, res) => res.send("Hello test world"));
 //route to slash '/' is basically the homepage, 2 parameters request and response (req, res), should display "hello world"
 
 // use routes
