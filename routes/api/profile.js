@@ -3,6 +3,8 @@ const router = express.Router();
 const mongoose = require("mongoose"); //deals with database
 const passport = require("passport"); // protect routes
 
+// load validation
+const validateProfileInput = require("../../validation/profile");
 // load profile model
 const Profile = require("../../models/Profile");
 // load user profile
@@ -29,6 +31,7 @@ router.get(
     const errors = {};
 
     Profile.findOne({ user: req.user.id })
+      .populate("user", ["name", "avatar"])
       //use the profile model
       .then(profile => {
         if (!profile) {
@@ -48,6 +51,13 @@ router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
+    const { errors, isValid } = validateProfileInput(req.body);
+    // check validation
+    if (!isValid) {
+      // return any errors with 400 status
+      return res.status(400).json(errors);
+    }
+
     // get fields
     const profileFields = {};
     profileFields.user = req.user.id; // logged in user incl. avatar name email etc
@@ -89,7 +99,7 @@ router.post(
             res.status(400).json(errors);
           }
           // save profile
-          new Profile(profileFields).save().then(profile = > res.json(profile));
+          new Profile(profileFields).save().then(profile => res.json(profile));
         });
       }
     });
